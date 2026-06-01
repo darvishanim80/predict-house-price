@@ -134,53 +134,17 @@ mantage_options = [
 # لود مدل‌ها از همین پوشه (جایی که app.py قرار داره)
 @st.cache_resource
 def load_models():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    FILE_ID = "1xl3eADDc1yCEKxQCpg97Ea9vxjTtCopa"  # این رو عوض کن با ID خودت
+    rf_path = "RondowmFrest_model_v3.1.pkl"
+    xg_path = "xgboost_model_v3.1.pkl"
     
-    # لینک دانلود مستقیم (برای فایل‌های بزرگ)
-    url = f"https://drive.google.com/uc?id={FILE_ID}&confirm=t"  # confirm=t برای فایل‌های بزرگ [citation:4]
+    # تلاش برای دانلود اگر فایل ناقص یا خراب باشه
+    for path, file_id in [(rf_path, "1xl3eADDc1yCEKxQCpg97Ea9vxjTtCopa"), 
+                           (xg_path, "1fJqy8f8sUrcq0adTGUj8M6fx1oVIrO0Q")]:
+        if not os.path.exists(path) or os.path.getsize(path) < 100_000_000:  # کمتر از 100MB = ناقص
+            url = f"https://drive.google.com/uc?id={file_id}&confirm=t"
+            gdown.download(url, path, quiet=False)
     
-    with st.spinner("📥 در حال دانلود مدل (حدود 400MB)..."):
-        # دانلود فایل
-        gdown.download(url, "RondowmFrest_model_v3.1.pkl", quiet=False)
-    FILE_ID = "1fJqy8f8sUrcq0adTGUj8M6fx1oVIrO0Q"  # این رو عوض کن با ID خودت
-    
-    # لینک دانلود مستقیم (برای فایل‌های بزرگ)
-    url = f"https://drive.google.com/uc?id={FILE_ID}&confirm=t"  # confirm=t برای فایل‌های بزرگ [citation:4]
-    
-    with st.spinner("📥 در حال دانلود مدل (حدود 400MB)..."):
-        # دانلود فایل
-        gdown.download(url, "xgboost_model_v3.1.pkl", quiet=False)
-    xg_filename = "xgboost_model_v3.1.pkl"
-    rf_filename = "RondowmFrest_model_v3.1.pkl"
-    
-    xg_path = os.path.join(current_dir, xg_filename)
-    rf_path = os.path.join(current_dir, rf_filename)
-    
-    xg_model = None
-    rf_model = None
-    
-    # بررسی و لود XGBoost
-    if os.path.exists(xg_path):
-        try:
-            xg_model = joblib.load(xg_path)
-            st.success(f"✅ مدل XGBoost با موفقیت لود شد")
-        except Exception as e:
-            st.error(f"❌ خطا در لود XGBoost: {e}")
-    else:
-        st.warning(f"⚠️ فایل {xg_filename} در پوشه جاری پیدا نشد")
-    
-    # بررسی و لود Random Forest
-    if os.path.exists(rf_path):
-        try:
-            rf_model = joblib.load(rf_path)
-            st.success(f"✅ مدل Random Forest با موفقیت لود شد")
-        except Exception as e:
-            st.error(f"❌ خطا در لود Random Forest: {e}")
-    else:
-        st.warning(f"⚠️ فایل {rf_filename} در پوشه جاری پیدا نشد")
-    
-    return xg_model, rf_model
+    return joblib.load(rf_path), joblib.load(xg_path)
 
 # لود مدل‌ها
 xg_model, rf_model = load_models()
